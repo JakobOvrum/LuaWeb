@@ -6,12 +6,13 @@ local pcall = pcall
 local type = type
 
 local parse = require "luaweb.parse"
+local request = require "luaweb.request"
 
 module "luaweb.client"
 
 local function httpAssert(a, message, code)
 	if not a then
-		error({message = message, code = code} ,2)
+		error({message = message, code = code}, 2)
 	end
 	return a
 end
@@ -25,9 +26,8 @@ local handlers
 function new(socket, callback)
 	return setmetatable({
 		socket = socket;
-		buffer = {};
-		handler = handlers.request;
-		parser = parse.request;
+		handler = handlers.requestLine;
+		parser = parse.requestLine;
 		headers = {};
 		receiver = function(s) return s:receive("*l") end;
 		callback = callback;
@@ -52,7 +52,7 @@ function client:think()
 end
 
 handlers = {
-	request = function(self, command, path, version)
+	requestLine = function(self, command, path, version)
 		httpAssert(command and path and version, "invalid request-line", 400)
 		
 		version = httpAssert(tonumber(version), "invalid HTTP version", 400)
@@ -105,6 +105,10 @@ function client:sendError(code, message)
 end
 
 function client:finalize()
-	self.callback(function(data) self.socket:send(data) end, self.command, self.path, self.headers, self.body)
+	local req = request.new{
+		body = self.body, command = self.command, path = self.path, headers = self.headers;
+		sink = function(data) self.socket:send(data) end;
+	}
+	self.callback(req)
 	self.socket:close()
 end

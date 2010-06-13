@@ -1,10 +1,11 @@
 local socket = require "socket"
+
 local sleep = socket.sleep
 local remove = table.remove
 local setmetatable = setmetatable
+local assert = assert
 
 local client = require "luaweb.client"
-local requestHandler = require "luaweb.handler".handle
 
 module "luaweb"
 
@@ -15,9 +16,9 @@ server.__index = server
 function new(config)
 	local self = {
 		port = config.port or 80;
-		root = config.root or "www";
 		socket = socket.tcp();
 		backlog = config.backlog or 16;
+		callback = assert(config.callback, "callback required");
 		clients = {};
 	}
 
@@ -33,7 +34,7 @@ function server:think()
 	do
 		local s, err = self.socket:accept()
 		if s then
-			clients[#clients + 1] = client.new(s, requestHandler)
+			clients[#clients + 1] = client.new(s, self.callback)
 		end
 	end
 
