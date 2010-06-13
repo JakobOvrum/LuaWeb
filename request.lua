@@ -5,10 +5,13 @@ local pairs = pairs
 
 module "luaweb.request"
 
+local parse = require "luaweb.parse"
+
 local req = {}
 req.__index = req
 
 function new(info)
+	info.path = parse.url(info.path)
 	return setmetatable(info, req)
 end
 

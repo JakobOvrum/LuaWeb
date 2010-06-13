@@ -1,4 +1,5 @@
 local print = print
+local char = string.char
 
 module "luaweb.parse"
 
@@ -13,5 +14,14 @@ end
 function request(data)
 	for line in data:gmatch("(.+)\r\n") do
 		print(line)
+	end
+end
+
+function url(uri)
+	return uri:gsub("%%..", function(hex)
+		hex = tonumber(hex, 16)
+		if hex then
+			return char(hex)
+		end
 	end
 end
