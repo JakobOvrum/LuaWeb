@@ -3,9 +3,9 @@ local concat = table.concat
 local insert = table.insert
 local pairs = pairs
 
-module "luaweb.request"
-
 local parse = require "luaweb.parse"
+
+module "luaweb.request"
 
 local req = {}
 req.__index = req
