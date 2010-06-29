@@ -52,12 +52,12 @@ function client:think()
 end
 
 handlers = {
-	requestLine = function(self, command, path, version)
-		httpAssert(command and path and version, "invalid request-line", 400)
+	requestLine = function(self, method, path, version)
+		httpAssert(method and path and version, "invalid request-line", 400)
 		
 		version = httpAssert(tonumber(version), "invalid HTTP version", 400)
 		httpAssert(version >= 1.1, "client must be HTTP/1.1 compatible", 505)
-		self.command = command
+		self.method = method
 		self.path = path
 		self.version = version
 
@@ -106,7 +106,7 @@ end
 
 function client:finalize()
 	local req = request.new{
-		body = self.body, command = self.command, path = self.path, headers = self.headers;
+		body = self.body, method = self.method, path = self.path, headers = self.headers;
 		sink = function(data) self.socket:send(data) end;
 	}
 	self.callback(req)

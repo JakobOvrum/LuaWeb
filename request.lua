@@ -12,7 +12,21 @@ local req = {}
 req.__index = req
 
 function new(info)
-	info.path = parse.url(info.path)
+    local path = info.path
+
+    if info.method == "GET" then
+        local uri, params = path:match("^([^%?]+)%?(.+)$")
+        info.path = parse.url(uri or path)
+        if params then
+            info.params = parse.params(params)
+        end
+	else
+        info.path = parse.url(path)
+        if info.method == "POST" then
+            info.params = parse.params(info.body)
+        end
+	end
+	
 	return setmetatable(info, req)
 end
 

@@ -20,3 +20,15 @@ function url(uri)
 		end
 	end)
 end
+function params(str)
+    local p = {}
+    for pair in str:gmatch("([^&]+)&?") do
+        local key, value = pair:match("^([^=]+)=(.+)$")
+        if key then
+            p[url(key)] = url(value)
+        else
+            p[url(pair)] = true
+        end
+    end
+    return p
+end
