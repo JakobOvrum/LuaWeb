@@ -22,9 +22,10 @@ function new(config)
 		clients = {};
 	}
 
-	self.socket:bind("*", self.port)
+	assert(self.socket:bind("*", self.port))
+	assert(self.socket:listen(self.backlog))
+
 	self.socket:settimeout(0)
-	self.socket:listen(self.backlog)
 
 	return setmetatable(self, server)
 end
