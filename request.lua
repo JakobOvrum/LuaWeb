@@ -2,6 +2,7 @@ local setmetatable = setmetatable
 local concat = table.concat
 local insert = table.insert
 local pairs = pairs
+local error = error
 
 local parse = require "luaweb.parse"
 
@@ -30,11 +31,22 @@ function statusName(code)
     return statusMessages[code]
 end
 
+function req:isActive()
+    return not self.served
+end
+
 function req:reply(r)
+    if self.served then
+        error("request already served", 2)
+    end
+    
 	local status = r.status
 	local lines = {("HTTP/1.1 %i %s"):format(status, r.message or statusName(status))}
 
-	local headers = r.headers or {}
+	local headers = r.headers or {
+        Server = "LuaWeb";
+	}
+	
 	local body = r.body
 	if body then
 		headers["Content-Length"] = body:len()
@@ -50,4 +62,6 @@ function req:reply(r)
 	end
 
 	self.sink(concat(lines, "\r\n"))
+
+	self.served = true
 end
